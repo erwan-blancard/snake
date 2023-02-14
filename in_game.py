@@ -12,7 +12,7 @@ class InGameState(game_state.GameState):
     def __init__(self):
         super().__init__()
         # Time Before Update
-        self.TBU = 0.3
+        self.TBU = 0.15
         self.last_update: float = 0
 
         self.snake_grid = SnakeGrid()
