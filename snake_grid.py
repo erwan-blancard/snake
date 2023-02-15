@@ -16,18 +16,39 @@ K_DOWN = "down"
 
 VALID_INPUTS = [K_RIGHT, K_LEFT, K_UP, K_DOWN]
 
+FRUIT_NORMAL = 0
+FRUIT_PACMAN = 1
+FRUIT_SMW = 2
+
 
 class SnakeGrid:
 
-    def __init__(self, grid_width, grid_height, custom_fruits=False):
+    def __init__(self, grid_width, grid_height, fruit_type=FRUIT_NORMAL):
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.nodes: list[list] = []
+
+        self.fruit_type = fruit_type
+        # pacman
         self.fruit_spritesheet: pygame.Surface = None
         self.fruit_index = 0
-        self.custom_fruits = custom_fruits
-        if self.custom_fruits:
+        if self.fruit_type == FRUIT_PACMAN:
             self.fruit_spritesheet = pygame.image.load("res/fruits.png")
+        # smw
+        self.snake_head_smw: pygame.Surface = None
+        self.snake_body_smw: pygame.Surface = None
+        if self.fruit_type == FRUIT_SMW:
+            sprites = pygame.image.load("res/smw.png")
+            img = pygame.Surface((16, 16), pygame.SRCALPHA)
+            img.blit(sprites, (-32, 0))
+            self.fruit_spritesheet = img
+            img = pygame.Surface((16, 16), pygame.SRCALPHA)
+            img.blit(sprites, (-16, 0))
+            self.snake_head_smw = img
+            img = pygame.Surface((16, 16), pygame.SRCALPHA)
+            img.blit(sprites, (0, 0))
+            self.snake_body_smw = img
+
         self.fruit_pos = (-1, -1)
         self.fruit_eaten = False
 
@@ -64,7 +85,7 @@ class SnakeGrid:
             self.win = True
         else:
             self.fruit_pos = empty_coords[random.randint(0, len(empty_coords)-1)]
-            if self.custom_fruits:
+            if self.fruit_type == FRUIT_PACMAN:
                 self.fruit_index = random.randint(0, int(self.fruit_spritesheet.get_width()/TILE_SIZE)-1)
 
     def is_fruit_valid(self):
@@ -85,12 +106,21 @@ class SnakeGrid:
         for col in range(self.grid_width):
             for row in range(self.grid_height):
                 if self.nodes[col][row] is not None:
-                    self.nodes[col][row].render(self.grid_surface, col, row)
+                    if self.fruit_type == FRUIT_SMW:
+                        if self.nodes[col][row].get_ID() == 0:
+                            self.grid_surface.blit(self.snake_head_smw, (col * TILE_SIZE, row * TILE_SIZE))
+                        else:
+                            self.grid_surface.blit(self.snake_body_smw, (col * TILE_SIZE, row * TILE_SIZE))
+                    else:
+                        self.nodes[col][row].render(self.grid_surface, col, row)
         if self.is_fruit_valid():
             img = FRUIT_IMG
-            if self.custom_fruits:
+            if self.fruit_type == FRUIT_PACMAN:
                 img = pygame.Surface((16, 16), pygame.SRCALPHA)
                 img.blit(self.fruit_spritesheet, (0, 0), (self.fruit_index*TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
+            elif self.fruit_type == FRUIT_SMW:
+                img = pygame.Surface((16, 16), pygame.SRCALPHA)
+                img.blit(self.fruit_spritesheet, (0, 0))
             self.grid_surface.blit(img, (self.fruit_pos[0]*TILE_SIZE, self.fruit_pos[1]*TILE_SIZE))
         return self.grid_surface
 

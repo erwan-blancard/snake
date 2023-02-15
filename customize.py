@@ -19,12 +19,16 @@ class CustomizeState(GameState):
         self.grid_width = snake_grid.GRID_WIDTH
         self.grid_height = snake_grid.GRID_HEIGHT
         self.speed = SPEEDS[1]
-        fruit_normal = pygame.transform.scale(node.FRUIT_IMG, (64, 64))
-        fruits = pygame.image.load("res/fruits.png")
-        fruit_custom = pygame.Surface((16, 16), pygame.SRCALPHA)
-        fruit_custom.blit(fruits, (0, 0))
-        fruit_custom = pygame.transform.scale(fruit_custom, (64, 64))
-        self.fruit_button = TrueFalseButton(window_bounds[0] - 92-28, window_bounds[1] / 2+108, 48, fruit_normal, fruit_custom)
+
+        self.fruit_normal = pygame.transform.scale(node.FRUIT_IMG, (32, 32))
+        self.fruit_pacman = pygame.Surface((16, 16), pygame.SRCALPHA)
+        self.fruit_pacman.blit(pygame.image.load("res/fruits.png"), (0, 0))
+        self.fruit_pacman = pygame.transform.scale(self.fruit_pacman, (32, 32))
+        self.fruit_smw = pygame.Surface((16, 16), pygame.SRCALPHA)
+        self.fruit_smw.blit(pygame.image.load("res/smw.png"), (-32, 0))
+        self.fruit_smw = pygame.transform.scale(self.fruit_smw, (32, 32))
+
+        self.fruit_type = 0
         self.buttons = [
             ButtonLabel("-", window_bounds[0]/4-32-32, window_bounds[1]/3+16, 32, 32, text.get_font(32), command=lambda: self.decr_width()),
             ButtonLabel("+", window_bounds[0]/4+56-32, window_bounds[1]/3+16, 32, 32, text.get_font(32), command=lambda: self.incr_width()),
@@ -32,9 +36,25 @@ class CustomizeState(GameState):
             ButtonLabel("+", window_bounds[0]/2+window_bounds[0]/4+56, window_bounds[1]/3+16, 32, 32, text.get_font(32), command=lambda: self.incr_height()),
             ButtonLabel("<", window_bounds[0]/2 - 24-32-92, window_bounds[1]/2+32, 32, 32, text.get_font(32), command=lambda: self.decr_speed()),
             ButtonLabel(">", window_bounds[0]/2 + 24+92, window_bounds[1]/2+32, 32, 32, text.get_font(32), command=lambda: self.incr_speed()),
-            ButtonLabel("Commencer", window_bounds[0]/2 - (284/2), window_bounds[1] - 72, 284, 32, text.get_font(32), command=lambda: game_state.set_custom_ingame_state(self.grid_width, self.grid_height, self.speed, self.fruit_button.activated)),
-            self.fruit_button
+            ButtonLabel("Commencer", window_bounds[0]/2 - (284/2), window_bounds[1] - 72, 284, 32, text.get_font(32), command=lambda: self.set_ingame_state()),
+            ButtonLabel("<", window_bounds[0] - 24 - 32 - 92, window_bounds[1]/2+108, 32, 32, text.get_font(32), command=lambda: self.decr_fruit_type()),
+            ButtonLabel(">", window_bounds[0] - 92+24, window_bounds[1]/2+108, 32, 32, text.get_font(32), command=lambda: self.incr_fruit_type())
         ]
+
+    def decr_fruit_type(self):
+        if self.fruit_type > 0:
+            self.fruit_type -= 1
+        else:
+            self.fruit_type = 2
+
+    def incr_fruit_type(self):
+        if self.fruit_type < 2:
+            self.fruit_type += 1
+        else:
+            self.fruit_type = 0
+
+    def set_ingame_state(self):
+        game_state.set_custom_ingame_state(self.grid_width, self.grid_height, self.speed, self.fruit_type)
 
     def incr_width(self):
         if self.grid_width < snake_grid.MAX_GRID_WIDTH:
@@ -74,6 +94,14 @@ class CustomizeState(GameState):
         text.draw_aligned_text(str(self.grid_height), screen.get_width()/2+screen.get_width()/4+28, screen.get_height()/3+4+16, screen, text.get_font(24))
         text.draw_aligned_text(SPEEDS_NAME[SPEEDS.index(self.speed)], screen.get_width()/2, screen.get_height() / 2+36, screen, text.get_font(24))
         text.draw_aligned_text("Fruits", screen.get_width() - 92, screen.get_height() / 2+72, screen, text.get_font(16), color=(0, 190, 255), shadow_color=(0, 100, 255), shadow_offset=2)
+        img_x = screen.get_width() - 18 - 92
+        img_y = screen.get_height()/2 + 108
+        if self.fruit_type == snake_grid.FRUIT_NORMAL:
+            screen.blit(self.fruit_normal, (img_x, img_y))
+        elif self.fruit_type == snake_grid.FRUIT_PACMAN:
+            screen.blit(self.fruit_pacman, (img_x, img_y))
+        elif self.fruit_type == snake_grid.FRUIT_SMW:
+            screen.blit(self.fruit_smw, (img_x, img_y))
 
     def input(self, event: pygame.event.Event):
         super().input(event)
