@@ -1,18 +1,26 @@
 import pygame
 import button
+import snake_grid
 
 # Holds the current state ID of the game
 state = 0
 update_pending = False
+
+load_custom_ingame = False
+grid_width = snake_grid.GRID_WIDTH
+grid_height = snake_grid.GRID_HEIGHT
+speed = 0.15
+custom_fruits = False
 
 
 MENU = 0
 INGAME = 1
 PROFILE = 2
 SCOREBOARD = 3
+CUSTOMIZE = 4
 
 
-profile_name = "Joueur"
+profile_name = "joueur"
 
 
 def set_state(newstate):
@@ -20,6 +28,20 @@ def set_state(newstate):
     global update_pending
     state = newstate
     update_pending = True
+
+
+def set_custom_ingame_state(grid_width_in, grid_height_in, speed_in, custom_fruits_in):
+    global load_custom_ingame
+    global grid_width
+    global grid_height
+    global speed
+    global custom_fruits
+    load_custom_ingame = True
+    grid_width = grid_width_in
+    grid_height = grid_height_in
+    speed = speed_in
+    custom_fruits = custom_fruits_in
+    set_state(INGAME)
 
 
 # base class for states with basic button support

@@ -4,6 +4,7 @@ from menu import MenuState
 from in_game import InGameState
 from scoreboard import ScoreBoardState
 from profile import ProfileState
+from customize import CustomizeState
 
 
 pygame.init()
@@ -14,7 +15,7 @@ screen = pygame.display.set_mode((720, 480))
 pygame.display.set_caption("Snake")
 
 game_state.state = 0
-state = InGameState()
+state = MenuState()
 
 running = True
 
@@ -22,7 +23,10 @@ while running:
 
     # Update state
     if game_state.update_pending:
-        if game_state.state == game_state.MENU:
+        if game_state.load_custom_ingame:
+            game_state.load_custom_ingame = False
+            state = InGameState(game_state.grid_width, game_state.grid_height, game_state.speed, game_state.custom_fruits)
+        elif game_state.state == game_state.MENU:
             state = MenuState()
         elif game_state.state == game_state.INGAME:
             state = InGameState()
@@ -30,6 +34,8 @@ while running:
             state = ProfileState()
         elif game_state.state == game_state.SCOREBOARD:
             state = ScoreBoardState()
+        elif game_state.state == game_state.CUSTOMIZE:
+            state = CustomizeState()
         else:
             print("Invalid state id:", game_state.state)
         game_state.update_pending = False

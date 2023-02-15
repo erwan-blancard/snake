@@ -2,8 +2,12 @@ import pygame
 from node import *
 import random
 
-GRID_WIDTH = 20
+GRID_WIDTH = 32
+MIN_GRID_WIDTH = 16
+MAX_GRID_WIDTH = 44
 GRID_HEIGHT = 16
+MIN_GRID_HEIGHT = 12
+MAX_GRID_HEIGHT = 26
 
 K_RIGHT = "right"
 K_LEFT = "left"
@@ -11,15 +15,19 @@ K_UP = "up"
 K_DOWN = "down"
 
 VALID_INPUTS = [K_RIGHT, K_LEFT, K_UP, K_DOWN]
-# KEYS_PRESSED = [False, False, False, False]
 
 
 class SnakeGrid:
 
-    def __init__(self, grid_width=GRID_WIDTH, grid_height=GRID_HEIGHT):
+    def __init__(self, grid_width, grid_height, custom_fruits=False):
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.nodes: list[list] = []
+        self.fruit_spritesheet: pygame.Surface = None
+        self.fruit_index = 0
+        self.custom_fruits = custom_fruits
+        if self.custom_fruits:
+            self.fruit_spritesheet = pygame.image.load("res/fruits.png")
         self.fruit_pos = (-1, -1)
         self.fruit_eaten = False
 
@@ -30,8 +38,7 @@ class SnakeGrid:
                 self.nodes[col].append(None)
 
         # create the snake
-        for i in range(3):
-            self.create_snake_node(self.nodes, 3-i, int(self.grid_height/2)-1)
+        self.create_snake_node(self.nodes, int(self.grid_width/2)-1, int(self.grid_height/2)-1)
 
         self.place_fruit(self.nodes)
 
@@ -57,6 +64,8 @@ class SnakeGrid:
             self.win = True
         else:
             self.fruit_pos = empty_coords[random.randint(0, len(empty_coords)-1)]
+            if self.custom_fruits:
+                self.fruit_index = random.randint(0, int(self.fruit_spritesheet.get_width()/TILE_SIZE)-1)
 
     def is_fruit_valid(self):
         if 0 <= self.fruit_pos[0] < self.grid_width and 0 <= self.fruit_pos[1] < self.grid_height:
@@ -78,14 +87,16 @@ class SnakeGrid:
                 if self.nodes[col][row] is not None:
                     self.nodes[col][row].render(self.grid_surface, col, row)
         if self.is_fruit_valid():
-            self.grid_surface.blit(FRUIT_IMG, (self.fruit_pos[0]*TILE_SIZE, self.fruit_pos[1]*TILE_SIZE))
+            img = FRUIT_IMG
+            if self.custom_fruits:
+                img = pygame.Surface((16, 16), pygame.SRCALPHA)
+                img.blit(self.fruit_spritesheet, (0, 0), (self.fruit_index*TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
+            self.grid_surface.blit(img, (self.fruit_pos[0]*TILE_SIZE, self.fruit_pos[1]*TILE_SIZE))
         return self.grid_surface
 
     def update(self):
         if self.pending_input not in VALID_INPUTS:
             self.pending_input = self.last_input
-
-        print(self.is_fruit_valid(), self.fruit_pos, self.fruit_eaten)
 
         self.inputs.insert(0, self.pending_input)
         self.inputs = self.inputs[:self.get_number_of_snake_nodes() + 1]
@@ -107,40 +118,28 @@ class SnakeGrid:
                                 self.pending_input = K_LEFT
                                 self.move_node_left(new_nodes, node, col, row)
                             else:
-                                if node.get_ID() == 0 and col + 1 < self.grid_width and type(self.nodes[col + 1][row]) is Node and self.nodes[col + 1][row].get_ID() > 1:
-                                    self.collided = True
-                                else:
-                                    self.move_node_right(new_nodes, node, col, row)
+                                self.move_node_right(new_nodes, node, col, row)
                         elif self.inputs[node.get_ID()] == K_LEFT:
                             if node.get_ID() == 0 and col - 1 >= 0 and type(self.nodes[col - 1][row]) is Node and self.nodes[col - 1][row].get_ID() == 1:
                                 self.inputs[node.get_ID()] = K_RIGHT
                                 self.pending_input = K_RIGHT
                                 self.move_node_right(new_nodes, node, col, row)
                             else:
-                                if node.get_ID() == 0 and col - 1 >= 0 and type(self.nodes[col - 1][row]) is Node and self.nodes[col - 1][row].get_ID() > 1:
-                                    self.collided = True
-                                else:
-                                    self.move_node_left(new_nodes, node, col, row)
+                                self.move_node_left(new_nodes, node, col, row)
                         elif self.inputs[node.get_ID()] == K_UP:
                             if node.get_ID() == 0 and row - 1 >= 0 and type(self.nodes[col][row - 1]) is Node and self.nodes[col][row - 1].get_ID() == 1:
                                 self.inputs[node.get_ID()] = K_DOWN
                                 self.pending_input = K_DOWN
                                 self.move_node_down(new_nodes, node, col, row)
                             else:
-                                if node.get_ID() == 0 and row - 1 >= 0 and type(self.nodes[col][row - 1]) is Node and self.nodes[col][row - 1].get_ID() > 1:
-                                    self.collided = True
-                                else:
-                                    self.move_node_up(new_nodes, node, col, row)
+                                self.move_node_up(new_nodes, node, col, row)
                         elif self.inputs[node.get_ID()] == K_DOWN:
                             if node.get_ID() == 0 and row + 1 < self.grid_height and type(self.nodes[col][row + 1]) is Node and self.nodes[col][row + 1].get_ID() == 1:
                                 self.inputs[node.get_ID()] = K_UP
                                 self.pending_input = K_UP
                                 self.move_node_up(new_nodes, node, col, row)
                             else:
-                                if node.get_ID() == 0 and row + 1 < self.grid_height and type(self.nodes[col][row + 1]) is Node and self.nodes[col][row + 1].get_ID() > 1:
-                                    self.collided = True
-                                else:
-                                    self.move_node_down(new_nodes, node, col, row)
+                                self.move_node_down(new_nodes, node, col, row)
 
         if not self.win and not self.collided:
             if self.fruit_eaten:
@@ -157,32 +156,44 @@ class SnakeGrid:
         self.pending_input = ""
 
     def move_node_right(self, new_nodes, node, col, row):
-        if col + 1 < self.grid_width:
-            new_nodes[col + 1][row] = node
-            self.check_fruit(col + 1, row)
-        else:
+        if node.get_ID() == 0 and col + 1 < self.grid_width and type(self.nodes[col + 1][row]) is Node and self.nodes[col + 1][row].get_ID() > 1:
             self.collided = True
+        else:
+            if col + 1 < self.grid_width:
+                new_nodes[col + 1][row] = node
+                self.check_fruit(col + 1, row)
+            else:
+                self.collided = True
 
     def move_node_left(self, new_nodes, node, col, row):
-        if col - 1 >= 0:
-            new_nodes[col - 1][row] = node
-            self.check_fruit(col - 1, row)
-        else:
+        if node.get_ID() == 0 and col - 1 >= 0 and type(self.nodes[col - 1][row]) is Node and self.nodes[col - 1][row].get_ID() > 1:
             self.collided = True
+        else:
+            if col - 1 >= 0:
+                new_nodes[col - 1][row] = node
+                self.check_fruit(col - 1, row)
+            else:
+                self.collided = True
 
     def move_node_up(self, new_nodes, node, col, row):
-        if row - 1 >= 0:
-            new_nodes[col][row - 1] = node
-            self.check_fruit(col, row - 1)
-        else:
+        if node.get_ID() == 0 and row - 1 >= 0 and type(self.nodes[col][row - 1]) is Node and self.nodes[col][row - 1].get_ID() > 1:
             self.collided = True
+        else:
+            if row - 1 >= 0:
+                new_nodes[col][row - 1] = node
+                self.check_fruit(col, row - 1)
+            else:
+                self.collided = True
 
     def move_node_down(self, new_nodes, node, col, row):
-        if row + 1 < self.grid_height:
-            new_nodes[col][row + 1] = node
-            self.check_fruit(col, row + 1)
-        else:
+        if node.get_ID() == 0 and row + 1 < self.grid_height and type(self.nodes[col][row + 1]) is Node and self.nodes[col][row + 1].get_ID() > 1:
             self.collided = True
+        else:
+            if row + 1 < self.grid_height:
+                new_nodes[col][row + 1] = node
+                self.check_fruit(col, row + 1)
+            else:
+                self.collided = True
 
     def check_fruit(self, col, row):
         if self.fruit_pos == (col, row):

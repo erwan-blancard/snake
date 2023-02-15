@@ -13,6 +13,7 @@ class BaseButton:
         self.mouse_clicked = False
 
     def render(self, screen: pygame.Surface):
+        # pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y, self.width, self.height), width=1)
         pass
 
     def mouse_input(self, event: pygame.event.Event):
@@ -44,6 +45,7 @@ class ButtonLabel(BaseButton):
 
     def render(self, screen: pygame.Surface):
         text.draw_centered_text(self.label, self.x+(self.width/2), self.y+(self.height/2), screen, self.font)
+        super().render(screen)
 
     def mouse_input(self, event: pygame.event.Event):
         super().mouse_input(event)
@@ -65,6 +67,7 @@ class ButtonIcon(BaseButton):
 
     def render(self, screen):
         screen.blit(self.icon, (self.x, self.y))
+        super().render(screen)
 
     def mouse_input(self, event: pygame.event.Event):
         super().mouse_input(event)
@@ -92,6 +95,7 @@ class TrueFalseButton(BaseButton):
         if self.activated:
             img_index = 1
         screen.blit(self.icons[img_index], (self.x, self.y))
+        super().render(screen)
 
     def mouse_input(self, event: pygame.event.Event):
         super().mouse_input(event)
@@ -117,7 +121,7 @@ class TrueFalseButton(BaseButton):
 
 class ButtonSliderVertical:
 
-    def __init__(self, x, y, length, stroke, release_command=None):
+    def __init__(self, x, y, length, stroke, color=(255, 255, 255), release_command=None):
         self.x = x
         self.y = y
         self.length = length
@@ -126,14 +130,15 @@ class ButtonSliderVertical:
         self.mouse_inside = False
         self.mouse_clicked = False
         self.mouse_focus = False
+        self.color = color
         self.release_command = release_command
 
     def render(self, screen: pygame.Surface):
         # bar
-        screen.fill((0, 0, 0), (self.x, self.y, self.stroke, self.length))
+        screen.fill(self.color, (self.x, self.y, self.stroke, self.length))
 
         # slider
-        pygame.draw.circle(screen, (0, 0, 0), (self.x + self.stroke / 2, self.y + self.length * self.scroll_pos), self.stroke * 2)
+        pygame.draw.circle(screen, self.color, (self.x + self.stroke / 2, self.y + self.length * self.scroll_pos), self.stroke * 2)
 
     def get_scroll_pos(self):
         return self.scroll_pos
