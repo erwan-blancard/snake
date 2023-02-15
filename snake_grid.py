@@ -33,11 +33,12 @@ class SnakeGrid:
         for i in range(3):
             self.create_snake_node(self.nodes, 3-i, int(self.grid_height/2)-1)
 
-        self.place_fruit()
+        self.place_fruit(self.nodes)
 
         self.grid_surface = pygame.Surface((TILE_SIZE*self.grid_width, TILE_SIZE*self.grid_height))
 
         self.collided = False
+        self.win = False
 
         self.pending_input = ""
         self.last_input = "right"
@@ -46,13 +47,16 @@ class SnakeGrid:
     def create_snake_node(self, node_list, tile_x, tile_y):
         node_list[tile_x][tile_y] = Node(self.get_number_of_snake_nodes())
 
-    def place_fruit(self):
+    def place_fruit(self, node_list):
         empty_coords: list[tuple] = []
         for col in range(self.grid_width):
             for row in range(self.grid_height):
-                if self.nodes[col][row] is None:
+                if node_list[col][row] is None:
                     empty_coords.append((col, row))
-        self.fruit_pos = empty_coords[random.randint(0, len(empty_coords)-1)]
+        if len(empty_coords)-1 < 0:
+            self.win = True
+        else:
+            self.fruit_pos = empty_coords[random.randint(0, len(empty_coords)-1)]
 
     def is_fruit_valid(self):
         if 0 <= self.fruit_pos[0] < self.grid_width and 0 <= self.fruit_pos[1] < self.grid_height:
@@ -81,7 +85,7 @@ class SnakeGrid:
         if self.pending_input not in VALID_INPUTS:
             self.pending_input = self.last_input
 
-        print(self.is_fruit_valid(), self.fruit_pos)
+        print(self.is_fruit_valid(), self.fruit_pos, self.fruit_eaten)
 
         self.inputs.insert(0, self.pending_input)
         self.inputs = self.inputs[:self.get_number_of_snake_nodes() + 1]
@@ -96,44 +100,56 @@ class SnakeGrid:
             for row in range(self.grid_height):
                 if self.nodes[col][row] is not None:
                     node = self.nodes[col][row]
-                    if not self.collided:
+                    if not self.win and not self.collided:
                         if self.inputs[node.get_ID()] == K_RIGHT:
                             if node.get_ID() == 0 and col + 1 < self.grid_width and type(self.nodes[col + 1][row]) is Node and self.nodes[col + 1][row].get_ID() == 1:
                                 self.inputs[node.get_ID()] = K_LEFT
                                 self.pending_input = K_LEFT
                                 self.move_node_left(new_nodes, node, col, row)
                             else:
-                                self.move_node_right(new_nodes, node, col, row)
+                                if node.get_ID() == 0 and col + 1 < self.grid_width and type(self.nodes[col + 1][row]) is Node and self.nodes[col + 1][row].get_ID() > 1:
+                                    self.collided = True
+                                else:
+                                    self.move_node_right(new_nodes, node, col, row)
                         elif self.inputs[node.get_ID()] == K_LEFT:
                             if node.get_ID() == 0 and col - 1 >= 0 and type(self.nodes[col - 1][row]) is Node and self.nodes[col - 1][row].get_ID() == 1:
                                 self.inputs[node.get_ID()] = K_RIGHT
                                 self.pending_input = K_RIGHT
                                 self.move_node_right(new_nodes, node, col, row)
                             else:
-                                self.move_node_left(new_nodes, node, col, row)
+                                if node.get_ID() == 0 and col - 1 >= 0 and type(self.nodes[col - 1][row]) is Node and self.nodes[col - 1][row].get_ID() > 1:
+                                    self.collided = True
+                                else:
+                                    self.move_node_left(new_nodes, node, col, row)
                         elif self.inputs[node.get_ID()] == K_UP:
                             if node.get_ID() == 0 and row - 1 >= 0 and type(self.nodes[col][row - 1]) is Node and self.nodes[col][row - 1].get_ID() == 1:
                                 self.inputs[node.get_ID()] = K_DOWN
                                 self.pending_input = K_DOWN
                                 self.move_node_down(new_nodes, node, col, row)
                             else:
-                                self.move_node_up(new_nodes, node, col, row)
+                                if node.get_ID() == 0 and row - 1 >= 0 and type(self.nodes[col][row - 1]) is Node and self.nodes[col][row - 1].get_ID() > 1:
+                                    self.collided = True
+                                else:
+                                    self.move_node_up(new_nodes, node, col, row)
                         elif self.inputs[node.get_ID()] == K_DOWN:
                             if node.get_ID() == 0 and row + 1 < self.grid_height and type(self.nodes[col][row + 1]) is Node and self.nodes[col][row + 1].get_ID() == 1:
                                 self.inputs[node.get_ID()] = K_UP
                                 self.pending_input = K_UP
                                 self.move_node_up(new_nodes, node, col, row)
                             else:
-                                self.move_node_down(new_nodes, node, col, row)
+                                if node.get_ID() == 0 and row + 1 < self.grid_height and type(self.nodes[col][row + 1]) is Node and self.nodes[col][row + 1].get_ID() > 1:
+                                    self.collided = True
+                                else:
+                                    self.move_node_down(new_nodes, node, col, row)
 
-        if not self.collided:
+        if not self.win and not self.collided:
             if self.fruit_eaten:
                 for col in range(self.grid_width):
                     for row in range(self.grid_height):
                         if self.nodes[col][row] is not None and self.nodes[col][row].get_ID() == self.get_number_of_snake_nodes()-1:
                             self.create_snake_node(new_nodes, col, row)
-
-                self.place_fruit()
+                self.fruit_pos = (-1, -1)
+                self.place_fruit(new_nodes)
                 self.fruit_eaten = False
             self.nodes = new_nodes
 
