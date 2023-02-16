@@ -11,6 +11,7 @@ grid_width = snake_grid.GRID_WIDTH
 grid_height = snake_grid.GRID_HEIGHT
 speed = 0.15
 fruit_type = 0
+ia_active = False
 
 
 MENU = 0
@@ -30,17 +31,19 @@ def set_state(newstate):
     update_pending = True
 
 
-def set_custom_ingame_state(grid_width_in, grid_height_in, speed_in, fruit_type_in):
+def set_custom_ingame_state(grid_width_in, grid_height_in, speed_in, fruit_type_in, ia_active_in):
     global load_custom_ingame
     global grid_width
     global grid_height
     global speed
     global fruit_type
+    global ia_active
     load_custom_ingame = True
     grid_width = grid_width_in
     grid_height = grid_height_in
     speed = speed_in
     fruit_type = fruit_type_in
+    ia_active = ia_active_in
     set_state(INGAME)
 
 

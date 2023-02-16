@@ -7,6 +7,7 @@ import game_state
 from node import TILE_SIZE
 from snake_grid import SnakeGrid, VALID_INPUTS, GRID_WIDTH, GRID_HEIGHT
 from button import ButtonLabel
+from ia.ia import next_input
 
 
 def render_overlay(screen: pygame.Surface):
@@ -18,7 +19,7 @@ def render_overlay(screen: pygame.Surface):
 
 class InGameState(game_state.GameState):
 
-    def __init__(self, grid_width=GRID_WIDTH, grid_height=GRID_HEIGHT, TBU=0.15, fruit_type=0):
+    def __init__(self, grid_width=GRID_WIDTH, grid_height=GRID_HEIGHT, TBU=0.15, fruit_type=0, ia_active=False):
         super().__init__()
         # Time Before Update
         self.TBU = TBU
@@ -32,16 +33,34 @@ class InGameState(game_state.GameState):
         window_bounds = pygame.display.get_window_size()
         self.buttons = [
             ButtonLabel("Continuer", window_bounds[0] / 2 - 109, window_bounds[1] / 2, 218, 24, font=text.get_font(24), command=lambda: self.close_pause_menu()),
-            ButtonLabel("Recommencer", window_bounds[0] / 2 - 132, window_bounds[1] / 2 + 84, 264, 24, font=text.get_font(24), command=lambda: game_state.set_custom_ingame_state(self.snake_grid.grid_width, self.snake_grid.grid_height, self.TBU, self.snake_grid.fruit_type)),
+            ButtonLabel("Recommencer", window_bounds[0] / 2 - 132, window_bounds[1] / 2 + 84, 264, 24, font=text.get_font(24), command=lambda: game_state.set_custom_ingame_state(self.snake_grid.grid_width, self.snake_grid.grid_height, self.TBU, self.snake_grid.fruit_type, self.ia_active)),
             ButtonLabel("Quitter", window_bounds[0] / 2 - 86, window_bounds[1] / 2 + 168, 172, 24, font=text.get_font(24), command=lambda: game_state.set_state(game_state.MENU))
         ]
 
-        self.gameover_button = ButtonLabel("Recommencer", window_bounds[0]/2 - 132, window_bounds[1]/2 + 128, 264, 24, font=text.get_font(24), command=lambda: game_state.set_custom_ingame_state(self.snake_grid.grid_width, self.snake_grid.grid_height, self.TBU, self.snake_grid.fruit_type))
+        self.gameover_button = ButtonLabel("Recommencer", window_bounds[0]/2 - 132, window_bounds[1]/2 + 128, 264, 24, font=text.get_font(24), command=lambda: game_state.set_custom_ingame_state(self.snake_grid.grid_width, self.snake_grid.grid_height, self.TBU, self.snake_grid.fruit_type, self.ia_active))
+
+        self.ia_active = ia_active
+        if self.ia_active:
+            self.started = True
 
     def update(self):
         super().update()
         if self.started and not self.paused:
             if time.time() > self.last_update + self.TBU:
+                # ia input
+                if self.ia_active:
+                    # convert nodes to numbers
+                    node_list: list[list[int]] = []
+                    for col in range(self.snake_grid.grid_width):
+                        node_list.append([])
+                        for row in range(self.snake_grid.grid_height):
+                            ID = -1
+                            if self.snake_grid.nodes[col][row] is not None:
+                                ID = self.snake_grid.nodes[col][row].get_ID()
+                            node_list[col].append(ID)
+                    ia_input = next_input(node_list, self.snake_grid.inputs, self.snake_grid.fruit_pos)
+                    self.snake_grid.input(ia_input)
+
                 self.last_update = time.time()
                 self.snake_grid.update()
 
@@ -70,11 +89,14 @@ class InGameState(game_state.GameState):
             text.draw_centered_text("Votre score: "+str(self.snake_grid.get_number_of_snake_nodes()-1), screen.get_width() / 2, screen.get_height()/2+32, screen, text.get_font(24))
 
     def input(self, event: pygame.event.Event):
-        if not self.started and event.type == pygame.KEYDOWN:
-            if pygame.key.name(event.key) in VALID_INPUTS:
-                self.started = True
-        if self.started and not self.paused:
-            self.snake_grid.input(event)
+        if not self.ia_active:
+            # user input
+            if not self.started and event.type == pygame.KEYDOWN:
+                if pygame.key.name(event.key) in VALID_INPUTS:
+                    self.started = True
+            if self.started and not self.paused:
+                if event.type == pygame.KEYDOWN and pygame.key.name(event.key) in VALID_INPUTS:
+                    self.snake_grid.input(pygame.key.name(event.key))
 
         if event.type == pygame.KEYDOWN:
             if (not self.snake_grid.win and not self.snake_grid.collided) and pygame.key.name(event.key) == "escape":
@@ -86,7 +108,7 @@ class InGameState(game_state.GameState):
                 if pygame.key.name(event.key) == "return":
                     if score_utils.get_score(game_state.profile_name) < self.snake_grid.get_number_of_snake_nodes()-1:
                         score_utils.add_score(game_state.profile_name, self.snake_grid.get_number_of_snake_nodes()-1)
-                    game_state.set_custom_ingame_state(self.snake_grid.grid_width, self.snake_grid.grid_height, self.TBU, self.snake_grid.fruit_type)
+                    game_state.set_custom_ingame_state(self.snake_grid.grid_width, self.snake_grid.grid_height, self.TBU, self.snake_grid.fruit_type, self.ia_active)
 
         if self.snake_grid.win or self.snake_grid.collided:
             self.gameover_button.mouse_input(event)

@@ -1,4 +1,6 @@
 import pygame
+
+import score_utils
 import text
 import game_state
 from button import ButtonLabel
@@ -20,6 +22,7 @@ class ProfileState(game_state.GameState):
             self.warning_text = "Le nom doit contenir au plus 16 characteres !"
         elif len(self.profile_name_in) >= 3:
             game_state.profile_name = self.profile_name_in
+            score_utils.set_last_profile(game_state.profile_name)
             game_state.set_state(game_state.MENU)
         else:
             self.warning_text = "Le nom doit contenir au moins 3 characteres !"

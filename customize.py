@@ -29,6 +29,9 @@ class CustomizeState(GameState):
         self.fruit_smw = pygame.transform.scale(self.fruit_smw, (32, 32))
 
         self.fruit_type = 0
+
+        self.ia_active = False
+
         self.buttons = [
             ButtonLabel("-", window_bounds[0]/4-32-32, window_bounds[1]/3+16, 32, 32, text.get_font(32), command=lambda: self.decr_width()),
             ButtonLabel("+", window_bounds[0]/4+56-32, window_bounds[1]/3+16, 32, 32, text.get_font(32), command=lambda: self.incr_width()),
@@ -38,8 +41,15 @@ class CustomizeState(GameState):
             ButtonLabel(">", window_bounds[0]/2 + 24+92, window_bounds[1]/2+32, 32, 32, text.get_font(32), command=lambda: self.incr_speed()),
             ButtonLabel("Commencer", window_bounds[0]/2 - (284/2), window_bounds[1] - 72, 284, 32, text.get_font(32), command=lambda: self.set_ingame_state()),
             ButtonLabel("<", window_bounds[0] - 24 - 32 - 92, window_bounds[1]/2+108, 32, 32, text.get_font(32), command=lambda: self.decr_fruit_type()),
-            ButtonLabel(">", window_bounds[0] - 92+24, window_bounds[1]/2+108, 32, 32, text.get_font(32), command=lambda: self.incr_fruit_type())
+            ButtonLabel(">", window_bounds[0] - 92+24, window_bounds[1]/2+108, 32, 32, text.get_font(32), command=lambda: self.incr_fruit_type()),
+            TrueFalseButton(72, window_bounds[1]/2+108, 32, pygame.image.load("res/checkbox.png"), pygame.image.load("res/checkbox_checked.png"), false_command=lambda: self.deselect_ia(), true_command=lambda: self.select_ia())
         ]
+
+    def select_ia(self):
+        self.ia_active = True
+
+    def deselect_ia(self):
+        self.ia_active = False
 
     def decr_fruit_type(self):
         if self.fruit_type > 0:
@@ -54,7 +64,7 @@ class CustomizeState(GameState):
             self.fruit_type = 0
 
     def set_ingame_state(self):
-        game_state.set_custom_ingame_state(self.grid_width, self.grid_height, self.speed, self.fruit_type)
+        game_state.set_custom_ingame_state(self.grid_width, self.grid_height, self.speed, self.fruit_type, self.ia_active)
 
     def incr_width(self):
         if self.grid_width < snake_grid.MAX_GRID_WIDTH:
@@ -94,6 +104,7 @@ class CustomizeState(GameState):
         text.draw_aligned_text(str(self.grid_height), screen.get_width()/2+screen.get_width()/4+28, screen.get_height()/3+4+16, screen, text.get_font(24))
         text.draw_aligned_text(SPEEDS_NAME[SPEEDS.index(self.speed)], screen.get_width()/2, screen.get_height() / 2+36, screen, text.get_font(24))
         text.draw_aligned_text("Fruits", screen.get_width() - 92, screen.get_height() / 2+72, screen, text.get_font(16), color=(0, 190, 255), shadow_color=(0, 100, 255), shadow_offset=2)
+        text.draw_aligned_text("IA", 88, screen.get_height()/2+108-32, screen, text.get_font(16), color=(100, 200, 0), shadow_color=(80, 165, 0), shadow_offset=2)
         img_x = screen.get_width() - 18 - 92
         img_y = screen.get_height()/2 + 108
         if self.fruit_type == snake_grid.FRUIT_NORMAL:

@@ -70,7 +70,7 @@ class SnakeGrid:
 
         self.pending_input = ""
         self.last_input = "right"
-        self.inputs = [self.last_input] * 4
+        self.inputs = [self.last_input] * 2
 
     def create_snake_node(self, node_list, tile_x, tile_y):
         node_list[tile_x][tile_y] = Node(self.get_number_of_snake_nodes())
@@ -229,7 +229,6 @@ class SnakeGrid:
         if self.fruit_pos == (col, row):
             self.fruit_eaten = True
 
-    def input(self, event: pygame.event.Event):
-        if event.type == pygame.KEYDOWN:
-            if pygame.key.name(event.key) in VALID_INPUTS:
-                self.pending_input = pygame.key.name(event.key)
+    def input(self, key_input: str):
+        if key_input in VALID_INPUTS:
+            self.pending_input = key_input

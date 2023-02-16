@@ -1,6 +1,7 @@
 import os
 import json
 
+import game_state
 
 FILE = "scores.json"
 
@@ -8,7 +9,7 @@ FILE = "scores.json"
 def create_score_file():
     try:
         file = open(FILE, "w")
-        json.dump({"profiles": []}, file)
+        json.dump({"profiles": [], "last_profile": game_state.profile_name}, file)
         file.close()
     except IOError as e:
         print(e)
@@ -37,6 +38,27 @@ def write_to_file(json_dict: dict):
     over_file = open_score_file("w")
     json.dump(json_dict, over_file, indent=4)
     over_file.close()
+
+
+def set_last_profile(profile: str):
+    file = open_score_file()
+    json_dict = get_JSON(file)
+    file.close()
+    json_dict["last_profile"] = profile
+    write_to_file(json_dict)
+
+
+def get_last_profile():
+    last_profile = game_state.profile_name
+    file = open_score_file()
+    if file is not None:
+        json_dict: dict = get_JSON(file)
+        if json_dict is not None:
+            if "last_profile" in json_dict:
+                last_profile = json_dict["last_profile"]
+    if file is not None:
+        file.close()
+    return last_profile
 
 
 def get_profiles():

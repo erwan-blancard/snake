@@ -1,5 +1,6 @@
 import pygame
 import game_state
+import score_utils
 from menu import MenuState
 from in_game import InGameState
 from scoreboard import ScoreBoardState
@@ -17,6 +18,8 @@ pygame.display.set_caption("Snake")
 game_state.state = 0
 state = MenuState()
 
+game_state.profile_name = score_utils.get_last_profile()
+
 running = True
 
 while running:
@@ -25,7 +28,7 @@ while running:
     if game_state.update_pending:
         if game_state.load_custom_ingame:
             game_state.load_custom_ingame = False
-            state = InGameState(game_state.grid_width, game_state.grid_height, game_state.speed, game_state.fruit_type)
+            state = InGameState(game_state.grid_width, game_state.grid_height, game_state.speed, game_state.fruit_type, game_state.ia_active)
         elif game_state.state == game_state.MENU:
             state = MenuState()
         elif game_state.state == game_state.INGAME:
