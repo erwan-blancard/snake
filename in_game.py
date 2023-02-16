@@ -1,6 +1,7 @@
 import time
 import pygame
 import score_utils
+import snake_grid
 import text
 import game_state
 from node import TILE_SIZE
@@ -47,6 +48,9 @@ class InGameState(game_state.GameState):
     def render(self, screen: pygame.Surface):
         rendered_surface = self.snake_grid.get_rendered_grid()
         stroke = 4
+        # if board is smaller than the max allowed size / 2, upscale by 2
+        if rendered_surface.get_width() <= (snake_grid.MAX_GRID_WIDTH*TILE_SIZE)/2 and rendered_surface.get_height() <= (snake_grid.MAX_GRID_HEIGHT*TILE_SIZE)/2:
+            rendered_surface = pygame.transform.scale(rendered_surface, (rendered_surface.get_width()*2, rendered_surface.get_height()*2))
         pygame.draw.rect(screen, (0, 0, 0), (screen.get_width()/2 - rendered_surface.get_width()/2-stroke, screen.get_height()/2 - rendered_surface.get_height()/2 + TILE_SIZE-stroke, rendered_surface.get_width()+(stroke*2), rendered_surface.get_height()+(stroke*2)), width=stroke)
         screen.blit(rendered_surface, (screen.get_width()/2 - rendered_surface.get_width()/2, screen.get_height()/2 - rendered_surface.get_height()/2 + TILE_SIZE))
         text.draw_centered_text("Score : " + str(self.snake_grid.get_number_of_snake_nodes()-1), screen.get_width()/2, (screen.get_height()/2 - rendered_surface.get_height()/2 + TILE_SIZE)/2, screen, text.get_font(24))

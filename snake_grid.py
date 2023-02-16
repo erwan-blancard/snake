@@ -2,10 +2,10 @@ import pygame
 from node import *
 import random
 
-GRID_WIDTH = 32
+GRID_WIDTH = 20
 MIN_GRID_WIDTH = 16
 MAX_GRID_WIDTH = 44
-GRID_HEIGHT = 16
+GRID_HEIGHT = 12
 MIN_GRID_HEIGHT = 12
 MAX_GRID_HEIGHT = 26
 
