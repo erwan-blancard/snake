@@ -1,7 +1,7 @@
 MAX_COUNT = 32767
 
 
-def next_input(nodes: list[list], inputs: list[str], fruit_pos: tuple[int, int]):
+def ia(nodes: list[list], inputs: list[str], fruit_pos: tuple[int, int]):
     next_direction = inputs[0]
     grid_width = len(nodes)
     grid_height = len(nodes[0])

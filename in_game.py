@@ -6,7 +6,7 @@ import text
 import game_state
 from snake_grid import SnakeGrid, VALID_INPUTS, GRID_WIDTH, GRID_HEIGHT, TILE_SIZE
 from button import ButtonLabel
-from ia.ia import next_input
+from ia.ia import ia
 
 
 def render_overlay(screen: pygame.Surface):
@@ -49,7 +49,7 @@ class InGameState(game_state.GameState):
             if time.time() > self.last_update + self.TBU:
                 # ia input
                 if self.ia_active:
-                    ia_input = next_input(self.snake_grid.nodes, self.snake_grid.inputs, self.snake_grid.fruit_pos)
+                    ia_input = ia(self.snake_grid.nodes, self.snake_grid.inputs, self.snake_grid.fruit_pos)
                     print(ia_input)
                     self.snake_grid.input(ia_input)
 
