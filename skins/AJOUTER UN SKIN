@@ -1,0 +1,11 @@
+Un pack de skin peut être composé de 3 fichiers:
+- body.png
+- fruit.png
+- head.png
+
+Les images doivent être des images de 16x16 pixels.
+
+L'image fruit.png peut être une liste de plusieurs sprites pour les fruits. Les sprites des fruits doivent se suivre à l'horizontal pour avoir une image du type (16*n)x16.
+Pour un exemple, voir le pack "pacman".
+
+Pour ajouter un skin, créez un dossier avec le nom du pack de skin et placer les images dans ce dossier.
