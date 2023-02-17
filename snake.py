@@ -28,7 +28,7 @@ while running:
     if game_state.update_pending:
         if game_state.load_custom_ingame:
             game_state.load_custom_ingame = False
-            state = InGameState(game_state.grid_width, game_state.grid_height, game_state.speed, game_state.fruit_type, game_state.ia_active)
+            state = InGameState(game_state.grid_width, game_state.grid_height, game_state.speed, game_state.skin, game_state.ia_active)
         elif game_state.state == game_state.MENU:
             state = MenuState()
         elif game_state.state == game_state.INGAME:

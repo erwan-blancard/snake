@@ -1,9 +1,10 @@
+import os
+
 import game_state
-import node
 import snake_grid
-import text
 from game_state import GameState
 from button import *
+import text
 import pygame
 
 
@@ -20,15 +21,10 @@ class CustomizeState(GameState):
         self.grid_height = snake_grid.GRID_HEIGHT
         self.speed = SPEEDS[1]
 
-        self.fruit_normal = pygame.transform.scale(node.FRUIT_IMG, (32, 32))
-        self.fruit_pacman = pygame.Surface((16, 16), pygame.SRCALPHA)
-        self.fruit_pacman.blit(pygame.image.load("res/fruits.png"), (0, 0))
-        self.fruit_pacman = pygame.transform.scale(self.fruit_pacman, (32, 32))
-        self.fruit_smw = pygame.Surface((16, 16), pygame.SRCALPHA)
-        self.fruit_smw.blit(pygame.image.load("res/smw.png"), (-32, 0))
-        self.fruit_smw = pygame.transform.scale(self.fruit_smw, (32, 32))
-
-        self.fruit_type = 0
+        self.skin_list: list[str] = [None]
+        for skin_dir in next(os.walk('skins'))[1]:
+            self.skin_list.append(skin_dir)
+        self.skin_list_index = 0
 
         self.ia_active = False
 
@@ -40,8 +36,8 @@ class CustomizeState(GameState):
             ButtonLabel("<", window_bounds[0]/2 - 24-32-92, window_bounds[1]/2+32, 32, 32, text.get_font(32), command=lambda: self.decr_speed()),
             ButtonLabel(">", window_bounds[0]/2 + 24+92, window_bounds[1]/2+32, 32, 32, text.get_font(32), command=lambda: self.incr_speed()),
             ButtonLabel("Commencer", window_bounds[0]/2 - (284/2), window_bounds[1] - 72, 284, 32, text.get_font(32), command=lambda: self.set_ingame_state()),
-            ButtonLabel("<", window_bounds[0] - 24 - 32 - 92, window_bounds[1]/2+108, 32, 32, text.get_font(32), command=lambda: self.decr_fruit_type()),
-            ButtonLabel(">", window_bounds[0] - 92+24, window_bounds[1]/2+108, 32, 32, text.get_font(32), command=lambda: self.incr_fruit_type()),
+            ButtonLabel("<", window_bounds[0] - 56 - 92+16-38, window_bounds[1]/2+66, 32, 32, text.get_font(32), command=lambda: self.prev_skin()),
+            ButtonLabel(">", window_bounds[0] - 92+48, window_bounds[1]/2+66, 32, 32, text.get_font(32), command=lambda: self.next_skin()),
             TrueFalseButton(72, window_bounds[1]/2+108, 32, pygame.image.load("res/checkbox.png"), pygame.image.load("res/checkbox_checked.png"), false_command=lambda: self.deselect_ia(), true_command=lambda: self.select_ia())
         ]
 
@@ -51,20 +47,20 @@ class CustomizeState(GameState):
     def deselect_ia(self):
         self.ia_active = False
 
-    def decr_fruit_type(self):
-        if self.fruit_type > 0:
-            self.fruit_type -= 1
+    def prev_skin(self):
+        if self.skin_list_index > 0:
+            self.skin_list_index -= 1
         else:
-            self.fruit_type = 2
+            self.skin_list_index = 2
 
-    def incr_fruit_type(self):
-        if self.fruit_type < 2:
-            self.fruit_type += 1
+    def next_skin(self):
+        if self.skin_list_index < 2:
+            self.skin_list_index += 1
         else:
-            self.fruit_type = 0
+            self.skin_list_index = 0
 
     def set_ingame_state(self):
-        game_state.set_custom_ingame_state(self.grid_width, self.grid_height, self.speed, self.fruit_type, self.ia_active)
+        game_state.set_custom_ingame_state(self.grid_width, self.grid_height, self.speed, self.skin_list[self.skin_list_index], self.ia_active)
 
     def incr_width(self):
         if self.grid_width < snake_grid.MAX_GRID_WIDTH:
@@ -103,16 +99,12 @@ class CustomizeState(GameState):
         text.draw_aligned_text(str(self.grid_width), screen.get_width()/4-4, screen.get_height()/3+4+16, screen, text.get_font(24))
         text.draw_aligned_text(str(self.grid_height), screen.get_width()/2+screen.get_width()/4+28, screen.get_height()/3+4+16, screen, text.get_font(24))
         text.draw_aligned_text(SPEEDS_NAME[SPEEDS.index(self.speed)], screen.get_width()/2, screen.get_height() / 2+36, screen, text.get_font(24))
-        text.draw_aligned_text("Fruits", screen.get_width() - 92, screen.get_height() / 2+72, screen, text.get_font(16), color=(0, 190, 255), shadow_color=(0, 100, 255), shadow_offset=2)
+        text.draw_aligned_text("Skin", screen.get_width() - 92, screen.get_height() / 2+72, screen, text.get_font(16), color=(0, 190, 255), shadow_color=(0, 100, 255), shadow_offset=2)
         text.draw_aligned_text("IA", 88, screen.get_height()/2+108-32, screen, text.get_font(16), color=(100, 200, 0), shadow_color=(80, 165, 0), shadow_offset=2)
-        img_x = screen.get_width() - 18 - 92
-        img_y = screen.get_height()/2 + 108
-        if self.fruit_type == snake_grid.FRUIT_NORMAL:
-            screen.blit(self.fruit_normal, (img_x, img_y))
-        elif self.fruit_type == snake_grid.FRUIT_PACMAN:
-            screen.blit(self.fruit_pacman, (img_x, img_y))
-        elif self.fruit_type == snake_grid.FRUIT_SMW:
-            screen.blit(self.fruit_smw, (img_x, img_y))
+        skin_title = self.skin_list[self.skin_list_index]
+        if skin_title is None:
+            skin_title = "Normal"
+        text.draw_aligned_text(skin_title, screen.get_width() - 92, screen.get_height()/2+108, screen, text.get_font(18), shadow_color=(200, 200, 200), shadow_offset=2)
 
     def input(self, event: pygame.event.Event):
         super().input(event)
