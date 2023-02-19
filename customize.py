@@ -111,3 +111,5 @@ class CustomizeState(GameState):
         if event.type == pygame.KEYDOWN:
             if pygame.key.name(event.key) == "escape":
                 game_state.set_state(game_state.MENU)
+            elif pygame.key.name(event.key) == "return":
+                self.set_ingame_state()

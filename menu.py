@@ -31,3 +31,6 @@ class MenuState(GameState):
 
     def input(self, event: pygame.event.Event):
         super().input(event)
+        if event.type == pygame.KEYDOWN:
+            if pygame.key.name(event.key) == "return":
+                game_state.set_state(game_state.CUSTOMIZE)
