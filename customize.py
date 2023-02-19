@@ -51,10 +51,10 @@ class CustomizeState(GameState):
         if self.skin_list_index > 0:
             self.skin_list_index -= 1
         else:
-            self.skin_list_index = 2
+            self.skin_list_index = len(self.skin_list)-1
 
     def next_skin(self):
-        if self.skin_list_index < 2:
+        if self.skin_list_index < len(self.skin_list)-1:
             self.skin_list_index += 1
         else:
             self.skin_list_index = 0
