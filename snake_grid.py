@@ -1,3 +1,4 @@
+import json
 import os
 
 import pygame
@@ -47,6 +48,8 @@ class SnakeGrid:
         self.snake_head: pygame.Surface = DEFAULT_SNAKE_IMG
         self.snake_body: pygame.Surface = DEFAULT_SNAKE_IMG
 
+        self.background_color = (30, 30, 30)
+
         # load skin
         if skin is not None:
             if os.path.exists("skins/"+self.skin):
@@ -68,6 +71,26 @@ class SnakeGrid:
                     except Exception as e:
                         print("Could not load " + "skins/"+self.skin+"/body.png"+": "+str(e))
                         self.snake_body: pygame.Surface = DEFAULT_SNAKE_IMG
+                if os.path.exists("skins/"+self.skin+"/background_color.json"):
+                    try:
+                        file = open("skins/"+self.skin+"/background_color.json")
+                        json_dict = json.load(file)
+                        if type(json_dict["color"]) == list:
+                            RGB = json_dict["color"]
+                            for c in RGB:
+                                if type(c) != int and type(c) != float:
+                                    raise TypeError("One of the color values is not an integer or a float.")
+                                if c < 0:
+                                    c = 0
+                                if c > 255:
+                                    c = 255
+                            self.background_color = (RGB[0], RGB[1], RGB[2])
+                        else:
+                            raise TypeError("json_dict[\"color\"] is not a list.")
+                        file.close()
+                    except Exception as e:
+                        print("Could not load " + "skins/"+self.skin+"/background_color.json: "+str(e))
+                        self.background_color = (30, 30, 30)
 
         self.fruit_pos = (-1, -1)
         self.fruit_eaten = False
@@ -121,7 +144,7 @@ class SnakeGrid:
         return count
 
     def get_rendered_grid(self):
-        self.grid_surface.fill((30, 30, 30))
+        self.grid_surface.fill(self.background_color)
         for col in range(self.grid_width):
             for row in range(self.grid_height):
                 if self.nodes[col][row] != -1:
