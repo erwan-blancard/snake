@@ -1,6 +1,7 @@
 MAX_COUNT = 32767
 
 
+# V3
 def ia(nodes: list[list], inputs: list[str], fruit_pos: tuple[int, int]):
     next_direction = inputs[0]
     grid_width = len(nodes)
@@ -184,40 +185,84 @@ def ia(nodes: list[list], inputs: list[str], fruit_pos: tuple[int, int]):
                 else:
                     next_direction = choose_direction("right", "left", next_direction)
 
-    if next_direction == "right" and not is_tile_free("right") and not inputs[0] == "left":
-        print("choice for right")
-        if is_tile_free(next_direction) and not inputs[0] == "left":
-            return next_direction
-        if is_tile_free("down"):
-            return "down"
-        else:
-            return "up"
+    # correct direction
+    if not is_tile_free(next_direction):
+        if next_direction == "right":
+            if inputs[0] == "left":
+                next_direction = "left"
+            # elif no space is available
+            elif not is_tile_free("up") and not is_tile_free("down"):
+                next_direction = "left"
 
-    if next_direction == "left" and not is_tile_free("left") and not inputs[0] == "right":
-        print("choice for left")
-        if is_tile_free(next_direction) and not inputs[0] == "right":
-            return next_direction
-        if is_tile_free("down"):
-            return "down"
-        else:
-            return "up"
+        elif next_direction == "left":
+            if inputs[0] == "right":
+                next_direction = "right"
+            elif not is_tile_free("up") and not is_tile_free("down"):
+                next_direction = "right"
 
-    if next_direction == "up" and not is_tile_free("up") and not inputs[0] == "down":
-        print("choice for up")
-        if is_tile_free(next_direction) and not inputs[0] == "down":
-            return next_direction
-        if is_tile_free("left"):
-            return "left"
-        else:
-            return "right"
+        elif next_direction == "up":
+            if inputs[0] == "down":
+                next_direction = "down"
+            elif not is_tile_free("left") and not is_tile_free("right"):
+                next_direction = "down"
 
-    if next_direction == "down" and not is_tile_free("down") and not inputs[0] == "up":
-        print("choice for down")
-        if is_tile_free(next_direction) and not inputs[0] == "up":
-            return next_direction
-        if is_tile_free("left"):
-            return "left"
-        else:
-            return "right"
+        elif next_direction == "down":
+            if inputs[0] == "up":
+                next_direction = "up"
+            elif not is_tile_free("left") and not is_tile_free("right"):
+                next_direction = "up"
+
+        # after fix
+        if next_direction == "right":
+            if not is_tile_free("right"):
+                if is_tile_free("up") and is_tile_free("down"):
+                    if get_num_tiles_free("up") > get_num_tiles_free("down"):
+                        next_direction = "up"
+                    else:
+                        next_direction = "down"
+                else:
+                    if is_tile_free("up"):
+                        next_direction = "up"
+                    elif is_tile_free("down"):
+                        next_direction = "down"
+
+        elif next_direction == "left":
+            if not is_tile_free("left"):
+                if is_tile_free("up") and is_tile_free("down"):
+                    if get_num_tiles_free("up") > get_num_tiles_free("down"):
+                        next_direction = "up"
+                    else:
+                        next_direction = "down"
+                else:
+                    if is_tile_free("up"):
+                        next_direction = "up"
+                    elif is_tile_free("down"):
+                        next_direction = "down"
+
+        elif next_direction == "up":
+            if not is_tile_free("up"):
+                if is_tile_free("left") and is_tile_free("right"):
+                    if get_num_tiles_free("left") > get_num_tiles_free("right"):
+                        next_direction = "left"
+                    else:
+                        next_direction = "right"
+                else:
+                    if is_tile_free("left"):
+                        next_direction = "left"
+                    elif is_tile_free("right"):
+                        next_direction = "right"
+
+        elif next_direction == "down":
+            if not is_tile_free("down"):
+                if is_tile_free("left") and is_tile_free("right"):
+                    if get_num_tiles_free("left") > get_num_tiles_free("right"):
+                        next_direction = "left"
+                    else:
+                        next_direction = "right"
+                else:
+                    if is_tile_free("left"):
+                        next_direction = "left"
+                    elif is_tile_free("right"):
+                        next_direction = "right"
 
     return next_direction
